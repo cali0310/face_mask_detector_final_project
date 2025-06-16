@@ -3,66 +3,77 @@ import tensorflow as tf
 import keras
 import numpy as np
 
-# Enable GPU memory growth (for TensorFlow)
+#Constants
+HAAR_CASCADE_PATH = r"C:\Users\dell\PycharmProjects\PythonProject\.venv\Lib\haarcascade_frontalface_default.xml"
+MODEL_PATH = r"C:\Users\dell\PycharmProjects\PythonProject\.venv\Lib\mask_recog.h5"
+
+LABELS_DICT = {0: 'without_mask', 1: 'with_mask'}
+COLOR_DICT = {0: (0, 0, 255), 1: (0, 255, 0)}
+
+#Setup GPU Memory Growth
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
-for physical_device in physical_devices:
-    tf.config.experimental.set_memory_growth(physical_device, True)
+for gpu_device in physical_devices:
+    tf.config.experimental.set_memory_growth(gpu_device, True)
 
-# Load Haar cascade face detector
-face_cascade = cv2.CascadeClassifier(r"C:\Users\dell\PycharmProjects\PythonProject\.venv\Lib\haarcascade_frontalface_default.xml")
+#Load Model and Classifier
+face_detector = cv2.CascadeClassifier(HAAR_CASCADE_PATH)
+mask_detection_model = keras.models.load_model(MODEL_PATH)
 
-# Load trained mask detection model
-model = keras.models.load_model(r"C:\Users\dell\PycharmProjects\PythonProject\.venv\Lib\mask_recog.h5")
-
-# Define labels and colors
-labels_dict = {0: 'without_mask', 1: 'with_mask'}
-color_dict = {0: (0, 0, 255), 1: (0, 255, 0)}
-
-# Open webcam
+#Start Webcam Feed
 video_capture = cv2.VideoCapture(0)
-
-# Ensure the camera is opened
 if not video_capture.isOpened():
     print("Error: Could not open webcam.")
     exit()
 
+#Main Loop
 while True:
-    ret, img = video_capture.read()
-    if not ret or img is None:
+    frame_captured, frame = video_capture.read()
+    if not frame_captured or frame is None:
         print("Error: Could not capture frame from the camera.")
-        continue  # Skip this iteration if no frame is captured
+        continue
 
-    img = cv2.flip(img, 1)  # Flip image for mirror effect
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Convert to grayscale for face detection
+    flipped_frame = cv2.flip(frame, 1)
+    grayscale_frame = cv2.cvtColor(flipped_frame, cv2.COLOR_BGR2GRAY)
 
-    # Detect faces
-    features = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    detected_faces = face_detector.detectMultiScale(
+        grayscale_frame,
+        scaleFactor=1.1,
+        minNeighbors=5,
+        minSize=(30, 30)
+    )
 
-    for (x, y, w, h) in features:
-        face = img[y:y+h, x:x+w]  # Crop face region
-        new_face = cv2.resize(face, (224, 224))  # Resize for model
-        normalize = new_face / 255.0  # Normalize pixel values
-        resize_face = np.reshape(normalize, (1, 224, 224, 3))
+    for (x_pos, y_pos, width, height) in detected_faces:
+        face_region = flipped_frame[y_pos:y_pos+height, x_pos:x_pos+width]
+        resized_face = cv2.resize(face_region, (224, 224))
+        normalized_face = resized_face / 255.0
+        input_face = np.reshape(normalized_face, (1, 224, 224, 3))
 
-        # Predict mask or no mask
-        predict = model.predict(resize_face)
-        print("Prediction Output:", predict)  # Debugging print
+        prediction = mask_detection_model.predict(input_face)
 
-        if predict[0][0] > predict[0][1]:
-            color, text = color_dict[1], "Mask on"
+        if prediction[0][0] > prediction[0][1]:
+            color = COLOR_DICT[1]
+            label = "Mask on"
         else:
-            color, text = color_dict[0], "No Mask"
+            color = COLOR_DICT[0]
+            label = "No Mask"
 
-        # Draw rectangle and label
-        cv2.rectangle(img, (x, y), (x + w, y + h), color, thickness=2)
-        cv2.putText(img, text, (x, y - 4), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
+        cv2.rectangle(flipped_frame, (x_pos, y_pos), (x_pos + width, y_pos + height), color, 2)
+        cv2.putText(
+            flipped_frame,
+            label,
+            (x_pos, y_pos - 10),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.8,
+            (255, 255, 255),
+            2,
+            cv2.LINE_AA
+        )
 
-    cv2.imshow("DETECT FACE", img)
+    cv2.imshow("Mask Detection", flipped_frame)
 
-    key = cv2.waitKey(10) & 0xFF
-    if key == ord('q'):  # Press 'q' to exit
+    if cv2.waitKey(10) & 0xFF == ord('q'):
         break
 
-# Release resources
+#Clean Up
 video_capture.release()
 cv2.destroyAllWindows()
