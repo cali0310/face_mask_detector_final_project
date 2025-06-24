@@ -8,3 +8,8 @@ class MaskDetectionSystem:
         self.face_classifier = cv2.CascadeClassifier(haar_cascade_file_path)
         self.mask_model = keras.models.load_model(model_file_path)
         self.configure_gpu_memory_growth()
+
+        def configure_gpu_memory_growth(self):
+            available_gpu_devices = tf.config.experimental.list_physical_devices('GPU')
+            for gpu_device in available_gpu_devices:
+                tf.config.experimental.set_memory_growth(gpu_device, True)
