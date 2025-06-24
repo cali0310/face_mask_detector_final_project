@@ -16,3 +16,9 @@ class WebcamVideoStream:
             if not ret or frame is None:
                 print("Error: Frame capture failed.")
                 continue
+
+            processed_frame = self.video_frame_processor.process_video_frame(frame)
+            cv2.imshow("Mask Detection", processed_frame)
+
+            if cv2.waitKey(10) & 0xFF == ord('q'):
+                break
