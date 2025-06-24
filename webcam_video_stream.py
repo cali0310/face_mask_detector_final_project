@@ -22,3 +22,9 @@ class WebcamVideoStream:
 
             if cv2.waitKey(10) & 0xFF == 27: #ESC key to exit
                 break
+    
+    def release_resources(self):
+        self.webcam_capture_stream.release()
+        cv2.destroyAllWindows()
+
+        self.release_resources()
