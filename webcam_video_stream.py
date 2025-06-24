@@ -20,5 +20,5 @@ class WebcamVideoStream:
             processed_frame = self.video_frame_processor.process_video_frame(frame)
             cv2.imshow("Mask Detection", processed_frame)
 
-            if cv2.waitKey(10) & 0xFF == ord('q'):
+            if cv2.waitKey(10) & 0xFF == 27: #ESC key to exit
                 break
