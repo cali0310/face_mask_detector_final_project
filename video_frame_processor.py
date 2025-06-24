@@ -21,4 +21,14 @@ class VideoFrameProcessor:
             label_text = label_text_mapping[predicted_label]
             box_color = bounding_box_color_mapping[predicted_label]
 
+            cv2.rectangle(flipped_frame, (face_x, face_y), (face_x + face_width, face_y + face_height), box_color, 2)
+            cv2.putText(
+                flipped_frame,
+                label_text,
+                (face_x, face_y - 10),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.8,
+                (255, 255, 255),
+                2
+            )
         return flipped_frame
