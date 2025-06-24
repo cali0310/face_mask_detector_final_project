@@ -10,3 +10,9 @@ class WebcamVideoStream:
         if not self.webcam_capture_stream.isOpened():
             print("Error: Could not open webcam.")
             return
+        
+        while True:
+            ret, frame = self.webcam_capture_stream.read()
+            if not ret or frame is None:
+                print("Error: Frame capture failed.")
+                continue
