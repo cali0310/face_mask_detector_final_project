@@ -23,4 +23,4 @@ class MaskDetectionSystem:
     def get_mask_prediction(self, face_image):
         processed_image = self.preprocess_face_image(face_image)
         prediction_scores = self.mask_model.predict(processed_image)
-        return prediction_scors
+        return prediction_scores
