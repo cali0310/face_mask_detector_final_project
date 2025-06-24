@@ -19,3 +19,8 @@ class MaskDetectionSystem:
         normalized_image = resized_image / 255.0
         reshaped_image = np.reshape(normalized_image, (1, 224, 224, 3))
         return reshaped_image
+    
+    def get_mask_prediction(self, face_image):
+        processed_image = self.preprocess_face_image(face_image)
+        prediction_scores = self.mask_model.predict(processed_image)
+        return prediction_scors
