@@ -5,3 +5,8 @@ class WebcamVideoStream:
     def __init__(self, video_frame_processor: VideoFrameProcessor):
         self.video_frame_processor = video_frame_processor
         self.webcam_capture_stream = cv2.VideoCapture(0)
+
+    def run_stream(self):
+        if not self.webcam_capture_stream.isOpened():
+            print("Error: Could not open webcam.")
+            return
