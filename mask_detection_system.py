@@ -2,13 +2,20 @@ import cv2
 import tensorflow as tf
 import keras
 import numpy as np
+from mask_detection_base import MaskDetectionBase
 
-class MaskDetectionSystem:
+class MaskDetectionSystem(MaskDetectionBase):
     def __init__(self, model_file_path, haar_cascade_file_path):
         self.face_classifier = cv2.CascadeClassifier(haar_cascade_file_path)
         self.mask_model = keras.models.load_model(model_file_path)
         self.configure_gpu_memory_growth()
 
+    def load_model(self, model_path):
+        return keras.models.load_model(model_path)
+
+    def predict(self, processed_input):
+        return self.mask_model.predict(processed_input)
+    
     def configure_gpu_memory_growth(self):
         available_gpu_devices = tf.config.experimental.list_physical_devices('GPU')
         for gpu_device in available_gpu_devices:

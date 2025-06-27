@@ -7,7 +7,7 @@ haar_cascade_file_path = r"C:\\Users\\dell\\PycharmProjects\\PythonProject\\.ven
 model_file_path = r"C:\\Users\\dell\\PycharmProjects\\PythonProject\\.venv\\Lib\\mask_recog.h5"
 
 if __name__ == '__main__':
-    mask_system = MaskDetectionSystem(model_file_path, haar_cascade_file_path)
-    frame_processor = VideoFrameProcessor(mask_system)
-    webcam_stream = WebcamVideoStream(frame_processor)
-    webcam_stream.run_stream()
+    detector = MaskDetectionSystem(model_file_path, haar_cascade_file_path)
+    processor = VideoFrameProcessor(detector)
+    stream = WebcamVideoStream(processor)
+    stream.run_stream()
